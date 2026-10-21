@@ -1,6 +1,12 @@
 # Sonar
 
-Step 1 foundation: a FastAPI service, a static Svelte/TypeScript placeholder, and local SQLite storage. Discovery and trading are not implemented.
+Sonar has a FastAPI service, a Svelte/TypeScript portfolio page, and local SQLite storage. Discovery and trading are not implemented.
+
+## Interface structure
+
+`web/src/App.svelte` opens `web/src/screens/Portfolio.svelte`, the only implemented screen. Manual, Automatic, and Settings remain empty components pending their interface briefs. The portfolio fills the page with a centered pink CRT title, a bright pixel reef on the left, and the intro on the right. Local cat sprites react on hover; the fish swim and scatter on ocean hover. Motion respects reduced-motion preferences. GitHub links to the supplied profile; Discord and “Let’s start” are disabled until destinations are supplied. Artwork prompts are recorded in [portfolio design notes](docs/portfolio-design.md).
+
+For local interface work, run `npm run dev` from `web/` and open the printed local URL. `npm run build` checks Svelte/TypeScript and produces the static app served by FastAPI.
 
 ## Setup
 
@@ -21,7 +27,7 @@ cd service
 ../.venv/bin/python -m sonar
 ```
 
-Open `http://127.0.0.1:8000/` for the placeholder and `http://127.0.0.1:8000/health` for `{"status":"ok"}`. The service can start before the web build; in that case only the API is available. SQLite is stored at `data/sonar.db` relative to the process working directory, or under `SONAR_DATA_DIR` if set. Logs are JSON lines on stderr. Bind to a trusted interface only; there is no app authentication yet.
+Open `http://127.0.0.1:8000/` for the portfolio and `http://127.0.0.1:8000/health` for `{"status":"ok"}`. The service can start before the web build; in that case only the API is available. SQLite is stored at `data/sonar.db` relative to the process working directory, or under `SONAR_DATA_DIR` if set. Logs are JSON lines on stderr. Bind to a trusted interface only; there is no app authentication yet.
 
 ## Check
 
