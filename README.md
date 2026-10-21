@@ -33,3 +33,7 @@ cd service
 ```
 
 The smoke test starts the service twice and checks `/health`, the placeholder page, SQLite WAL mode and persistence, and that a test secret is absent from responses and logs.
+
+## Step 2 feed probe
+
+The read-only PumpAPI measurement tool is separate from the app. See [feed probe instructions](docs/feed-probe.md) for a short run, optional PumpPortal launch comparison, and the 24–48 hour laptop trial.
