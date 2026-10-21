@@ -1,16 +1,36 @@
 <script lang="ts">
+  import { animateOcean } from '../lib/fish';
+
+  const titleLayers = ['title-base', 'glitch-copy glitch-cyan', 'glitch-copy glitch-yellow', 'glitch-copy glitch-red'];
   const fish = [
-    { x: 17, y: 27, size: 35, color: '#ff339e', stripe: '#ffe65a', duration: 13, delay: -3, reverse: false, scatterX: -24, scatterY: -16 },
-    { x: 79, y: 24, size: 29, color: '#51d9fa', stripe: '#ff75cc', duration: 17, delay: -6, reverse: true, scatterX: 20, scatterY: -22 },
-    { x: 31, y: 69, size: 25, color: '#ffe65a', stripe: '#ff554e', duration: 15, delay: -8, reverse: false, scatterX: -18, scatterY: 16 },
-    { x: 72, y: 65, size: 38, color: '#ff554e', stripe: '#ffe65a', duration: 19, delay: -4, reverse: true, scatterX: 24, scatterY: 18 },
-    { x: 36, y: 45, size: 24, color: '#51d9fa', stripe: '#ffe65a', duration: 12, delay: -10, reverse: false, scatterX: -14, scatterY: -20 },
-    { x: 87, y: 48, size: 26, color: '#ff339e', stripe: '#51d9fa', duration: 16, delay: -2, reverse: true, scatterX: 22, scatterY: 8 },
-    { x: 10, y: 54, size: 22, color: '#51d9fa', stripe: '#ff554e', duration: 14, delay: -9, reverse: false, scatterX: -20, scatterY: 10 },
-    { x: 61, y: 17, size: 23, color: '#ffe65a', stripe: '#ff339e', duration: 18, delay: -12, reverse: true, scatterX: 18, scatterY: -14 },
-    { x: 55, y: 77, size: 21, color: '#ff75cc', stripe: '#51d9fa', duration: 11, delay: -5, reverse: false, scatterX: -16, scatterY: 18 },
-    { x: 91, y: 75, size: 27, color: '#b88cff', stripe: '#ffe65a', duration: 20, delay: -15, reverse: true, scatterX: 26, scatterY: 12 }
+    { x: 17, y: 27, size: 44, color: '#ff339e', stripe: '#ffe65a' },
+    { x: 79, y: 24, size: 36, color: '#51d9fa', stripe: '#ff75cc' },
+    { x: 31, y: 69, size: 32, color: '#ffe65a', stripe: '#ff554e' },
+    { x: 72, y: 65, size: 48, color: '#ff554e', stripe: '#ffe65a' },
+    { x: 36, y: 45, size: 30, color: '#51d9fa', stripe: '#ffe65a' },
+    { x: 87, y: 48, size: 34, color: '#ff339e', stripe: '#51d9fa' },
+    { x: 10, y: 54, size: 28, color: '#51d9fa', stripe: '#ff554e' },
+    { x: 61, y: 17, size: 30, color: '#ffe65a', stripe: '#ff339e' },
+    { x: 55, y: 77, size: 28, color: '#ff75cc', stripe: '#51d9fa' },
+    { x: 91, y: 75, size: 34, color: '#b88cff', stripe: '#ffe65a' },
+    { x: 24, y: 16, size: 32, color: '#ff554e', stripe: '#51d9fa' },
+    { x: 48, y: 55, size: 38, color: '#ffe65a', stripe: '#ff75cc' },
+    { x: 67, y: 40, size: 30, color: '#b88cff', stripe: '#51d9fa' },
+    { x: 19, y: 83, size: 36, color: '#ff339e', stripe: '#ffe65a' }
   ];
+
+  function revealIdea(node: HTMLElement) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    node.classList.add('reveal-ready');
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        node.classList.add('is-visible');
+        observer.disconnect();
+      }
+    }, { threshold: .15 });
+    observer.observe(node);
+    return { destroy() { observer.disconnect(); } };
+  }
 </script>
 
 <svelte:head><title>Sonar — below the surface</title></svelte:head>
@@ -40,26 +60,33 @@
     <section class="hero" aria-labelledby="sonar-title">
       <div class="masthead">
         <div class="masthead-note"><span class="tiny-cross" aria-hidden="true"></span> A PERSONAL SOLANA PROJECT</div>
-        <h1 id="sonar-title"><span>SONAR</span><span class="glitch-copy glitch-cyan" aria-hidden="true">SONAR</span><span class="glitch-copy glitch-yellow" aria-hidden="true">SONAR</span></h1>
+        <h1 id="sonar-title" aria-label="SONAR">
+          {#each titleLayers as layer}
+            <span class="title-surface {layer}" aria-hidden="true">{#each [...'SONAR'] as letter}<span class="title-letter">{letter}</span>{/each}</span>
+          {/each}
+        </h1>
       </div>
       <div class="ocean-stage">
-        <div class="ocean">
+        <div class="ocean motion-paused" use:animateOcean={fish}>
           <img class="reef" src="/images/ocean-reef.png" alt="" width="1536" height="1024" fetchpriority="high" />
           <div class="ocean-scanlines"></div>
           {#each fish as swimmer}
-            <div class="fish-path" aria-hidden="true" style:left="{swimmer.x}%" style:top="{swimmer.y}%" style:--duration="{swimmer.duration}s" style:--delay="{swimmer.delay}s" style:--scatter-x="{swimmer.scatterX}px" style:--scatter-y="{swimmer.scatterY}px">
-              <svg class:reverse={swimmer.reverse} width={swimmer.size} height={swimmer.size * 2 / 3} viewBox="0 0 24 16" shape-rendering="crispEdges">
-                <path fill={swimmer.color} d="M0 4h3v2h4V4h4V2h7v2h4v2h2v4h-2v2h-4v2h-7v-2H7v-2H3v2H0Z" />
-                <path fill={swimmer.stripe} d="M11 4h7v2h-7zM7 6h4v2H7zM12 8h3v4h-3z" />
+            <div class="fish-path" aria-hidden="true" style:left="{swimmer.x}%" style:top="{swimmer.y}%" style:--tail-delay="{-swimmer.x / 100}s">
+              <svg width={swimmer.size} height={swimmer.size * 2 / 3} viewBox="0 0 24 16" shape-rendering="crispEdges">
+                <path class="fish-tail" fill={swimmer.color} d="M0 4h3v2h4v4H3v2H0Z" />
+                <path fill={swimmer.color} d="M7 6V4h4V2h7v2h4v2h2v4h-2v2h-4v2h-7v-2H7Z" />
+                <path class="fish-fin" fill={swimmer.stripe} d="M11 4h7v2h-7zM7 6h4v2H7zM12 8h3v4h-3z" />
                 <path fill="#211525" d="M19 6h2v2h-2z" />
               </svg>
             </div>
           {/each}
-          <span class="bubble bubble-one" aria-hidden="true"></span><span class="bubble bubble-two" aria-hidden="true"></span><span class="bubble bubble-three" aria-hidden="true"></span>
           <div class="cat-drift">
             <div class="mascot" role="img" aria-label="Black pixel cat drifting in the ocean">
               <span class="cat-speech" aria-hidden="true">blub?</span>
-              <img src="/images/void-cat.png" alt="" width="1254" height="1254" />
+              <div class="cat-body">
+                <img src="/images/void-cat.png" alt="" width="1254" height="1254" />
+                <span class="breath-bubbles" aria-hidden="true"><span class="bubble"></span><span class="bubble"></span><span class="bubble"></span></span>
+              </div>
             </div>
           </div>
         </div>
@@ -77,7 +104,7 @@
       </div>
     </section>
 
-    <section class="about" id="how-to-use" aria-labelledby="about-title">
+    <section class="about" id="how-to-use" aria-labelledby="about-title" use:revealIdea>
       <div class="about-heading">
         <span class="section-index">01 / THE IDEA</span>
         <h2 id="about-title">A little<br /> about Sonar.</h2>
@@ -95,8 +122,7 @@
   </main>
   <footer>
     <span>SONAR<span class="footer-slash">/</span></span>
-    <a class="banana-lift" href="#main" aria-label="Back to the surface with Banana Cat">
-      <img src="/images/banana-cat.png" alt="" loading="lazy" />
+    <a class="surface-link" href="#main">
       <span>BACK TO THE SURFACE <span aria-hidden="true">↑</span></span>
     </a>
   </footer>
@@ -116,7 +142,7 @@
   :global(button:focus-visible), :global(a:focus-visible) { outline: 3px solid #51d9fa; outline-offset: 6px; }
   :global(::selection) { color: #211525; background: #ff70c4; }
 
-  .site-frame { --pink: #ff209f; --muted: #b8acbb; width: 100%; min-height: 100svh; background-color: #1d1921; background-image: linear-gradient(#c4b4cc0b 1px, transparent 1px), linear-gradient(90deg, #c4b4cc0b 1px, transparent 1px); background-size: 32px 32px; }
+  .site-frame { --pixel-wave: polygon(0 50%, 6% 50%, 6% 25%, 13% 25%, 13% 0, 21% 0, 21% 25%, 27% 25%, 27% 75%, 35% 75%, 35% 50%, 43% 50%, 43% 25%, 51% 25%, 51% 0, 58% 0, 58% 50%, 66% 50%, 66% 75%, 74% 75%, 74% 25%, 82% 25%, 82% 0, 88% 0, 88% 50%, 94% 50%, 94% 75%, 100% 75%, 100% 100%, 0 100%); --pink: #ff209f; --muted: #b8acbb; width: 100%; min-height: 100svh; background-color: #1d1921; background-image: linear-gradient(#c4b4cc0b 1px, transparent 1px), linear-gradient(90deg, #c4b4cc0b 1px, transparent 1px); background-size: 32px 32px; }
   .skip-link { position: absolute; z-index: 10; left: 24px; top: -70px; background: #ff70c4; color: #211525; padding: 12px; font-size: 22px; }
   .skip-link:focus { top: 24px; }
   .site-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 17px clamp(24px, 4vw, 80px); }
@@ -139,12 +165,20 @@
   .masthead-note { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 18px; color: var(--muted); font-size: 16px; letter-spacing: 1.4px; }
   .tiny-cross { display: inline-block; width: 9px; height: 9px; background: #51d9fa; clip-path: polygon(33% 0, 66% 0, 66% 33%, 100% 33%, 100% 66%, 66% 66%, 66% 100%, 33% 100%, 33% 66%, 0 66%, 0 33%, 33% 33%); }
   h1 { position: relative; width: fit-content; margin: 0 auto; padding-top: 10px; font: 400 clamp(70px, 17.5vw, 320px)/1.12 'Press Start', monospace; letter-spacing: -.075em; color: var(--pink); filter: drop-shadow(3px 4px 0 #642342); }
-  h1 > span:first-child { background-image: repeating-linear-gradient(0deg, transparent 0 2px, #28112190 2px 3px), repeating-linear-gradient(90deg, #ff5bbd 0 2px, #e81b94 2px 3px); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .glitch-copy { position: absolute; top: 10px; left: 0; opacity: 0; pointer-events: none; animation: title-glitch 8s steps(1, end) infinite; }
+  .title-surface { display: flex; perspective: 3em; }
+  .title-letter { display: block; width: .925em; background-image: repeating-linear-gradient(0deg, transparent 0 2px, #28112190 2px 3px), repeating-linear-gradient(90deg, #ff5bbd 0 2px, #e81b94 2px 3px); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .title-letter:first-child { transform: translateZ(-.15em) rotateY(-24deg) scaleY(.86); opacity: .72; }
+  .title-letter:nth-child(2) { transform: translateZ(-.04em) rotateY(-12deg) scaleY(.96); opacity: .92; }
+  .title-letter:nth-child(4) { transform: translateZ(-.04em) rotateY(12deg) scaleY(.96); opacity: .92; }
+  .title-letter:last-child { transform: translateZ(-.15em) rotateY(24deg) scaleY(.86); opacity: .72; }
+  .glitch-copy { position: absolute; top: 10px; left: 0; opacity: 0; pointer-events: none; animation: title-glitch 6.4s steps(1, end) infinite; }
+  .glitch-copy .title-letter { background: none; -webkit-text-fill-color: currentColor; }
   .glitch-cyan { color: #51d9fa; }
   .glitch-yellow { color: #ffe65a; animation-delay: -0.08s; }
+  .glitch-red { color: #ff554e; animation: title-tear 7.6s steps(1, end) -2.8s infinite; }
 
-  .ocean-stage { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); min-height: clamp(460px, 38vw, 650px); }
+  .ocean-stage { position: relative; display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); min-height: clamp(460px, 38vw, 650px); }
+  .ocean-stage::before { position: absolute; z-index: 3; inset-inline: 0; top: 0; height: 28px; content: ''; background: #1d1921; clip-path: var(--pixel-wave); transform: rotate(180deg); pointer-events: none; }
   .ocean { position: relative; overflow: hidden; min-height: inherit; background: #142532; }
   .reef { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 58%; image-rendering: pixelated; }
   .ocean-scanlines { position: absolute; inset: 0; opacity: .1; background: repeating-linear-gradient(0deg, #201222 0 1px, transparent 1px 4px); pointer-events: none; }
@@ -158,19 +192,21 @@
   .dive-link:hover .pixel-arrow { transform: translateY(5px); }
   .cat-drift { position: absolute; z-index: 2; left: 48%; top: 19%; width: clamp(125px, 12vw, 195px); animation: drift 12s ease-in-out infinite alternate; }
   .mascot { position: relative; display: block; width: 100%; border: 0; background: transparent; padding: 0; }
-  .mascot img { display: block; width: 100%; height: auto; image-rendering: pixelated; transform: rotate(12deg); transition: transform 240ms steps(4); }
-  .mascot:hover img { transform: translateY(-15px) rotate(-7deg); }
+  .cat-body { position: relative; transform: rotate(12deg); transition: transform 240ms steps(4); }
+  .mascot img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+  .mascot:hover .cat-body { transform: translateY(-15px) rotate(-7deg); }
   .cat-speech, .friend-speech { position: absolute; z-index: 3; top: -34px; right: -20px; padding: 4px 11px 7px; color: #241526; background: #ffe65a; font-size: 24px; line-height: 1; white-space: nowrap; opacity: 0; transform: translateY(5px); transition: opacity 120ms, transform 120ms steps(2); pointer-events: none; }
   .cat-speech::after, .friend-speech::after { position: absolute; bottom: -7px; left: 12px; width: 7px; height: 7px; content: ''; background: inherit; }
   .mascot:hover .cat-speech, .friend:hover .friend-speech { opacity: 1; transform: translateY(0); }
-  .fish-path { position: absolute; animation: swim var(--duration) ease-in-out var(--delay) infinite alternate; }
-  .fish-path svg { --flip: 1; display: block; filter: drop-shadow(2px 2px 0 #241526); transform: scaleX(var(--flip)); transition: transform 300ms steps(5); }
-  .fish-path .reverse { --flip: -1; }
-  .ocean:hover .fish-path svg { transform: translate(var(--scatter-x), var(--scatter-y)) scaleX(var(--flip)); }
-  .bubble { position: absolute; border: 2px solid #74e3fd; width: 6px; height: 6px; opacity: 0; animation: bubble-up 9s linear infinite; }
-  .bubble-one { left: 52%; top: 65%; animation-delay: -1s; }
-  .bubble-two { left: 59%; top: 57%; animation-delay: -5s; width: 8px; height: 8px; }
-  .bubble-three { left: 51%; top: 69%; animation-delay: -7s; }
+  .fish-path { position: absolute; pointer-events: none; }
+  .fish-path svg { display: block; filter: drop-shadow(2px 2px 0 #241526); }
+  .fish-tail { transform-origin: 7px 8px; animation: tail-flick .32s steps(2, end) var(--tail-delay) infinite alternate; }
+  .fish-fin { transform-origin: 12px 8px; animation: fin-flick .6s steps(2, end) var(--tail-delay) infinite alternate; }
+  .breath-bubbles { position: absolute; left: 39%; top: 51%; pointer-events: none; }
+  .bubble { position: absolute; border: 2px solid #a0edff; width: 6px; height: 6px; opacity: 0; animation: bubble-up 7s linear infinite; }
+  .bubble:nth-child(2) { width: 8px; height: 8px; animation-delay: .35s; }
+  .bubble:nth-child(3) { width: 5px; height: 5px; animation-delay: .7s; }
+  .ocean.motion-paused :is(.cat-drift, .bubble, .fish-tail, .fish-fin) { animation-play-state: paused; }
 
   .friend { border: 0; padding: 0; background: none; }
   .friend img { display: block; width: 100%; height: auto; image-rendering: pixelated; transition: transform 180ms steps(3); }
@@ -182,9 +218,17 @@
   .pop-cat:hover .pop-pixels { opacity: 1; }
 
   .about { position: relative; display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.2fr); gap: clamp(40px, 8vw, 160px); padding: 80px clamp(28px, 8vw, 160px) 72px; background: #26202c; }
-  .about::before { position: absolute; z-index: 3; inset-inline: 0; top: -18px; height: 18px; content: ''; background: #26202c; clip-path: polygon(0 50%, 6% 50%, 6% 25%, 13% 25%, 13% 0, 21% 0, 21% 25%, 27% 25%, 27% 75%, 35% 75%, 35% 50%, 43% 50%, 43% 25%, 51% 25%, 51% 0, 58% 0, 58% 50%, 66% 50%, 66% 75%, 74% 75%, 74% 25%, 82% 25%, 82% 0, 88% 0, 88% 50%, 94% 50%, 94% 75%, 100% 75%, 100% 100%, 0 100%); pointer-events: none; }
+  .about::before { position: absolute; z-index: 3; inset-inline: 0; top: -28px; height: 28px; content: ''; background: #26202c; clip-path: var(--pixel-wave); pointer-events: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .about:global(.reveal-ready) :is(.section-index, h2, .about-copy p, .development-note) { opacity: 0; transform: translateY(20px); }
+    .about:global(.reveal-ready):global(.is-visible) :is(.section-index, h2, .about-copy p, .development-note) { opacity: 1; transform: translateY(0); transition: opacity 650ms ease var(--reveal-delay, 0ms), transform 650ms cubic-bezier(.2, .7, .2, 1) var(--reveal-delay, 0ms); }
+    .about:global(.reveal-ready) h2 { --reveal-delay: 80ms; }
+    .about:global(.reveal-ready) .about-copy p:first-child { --reveal-delay: 140ms; }
+    .about:global(.reveal-ready) .about-copy p:nth-child(2) { --reveal-delay: 220ms; }
+    .about:global(.reveal-ready) .development-note { --reveal-delay: 300ms; }
+  }
   .about-heading { position: relative; padding-bottom: 115px; }
-  .section-index { color: #b8acbb; font-size: 16px; letter-spacing: 1px; }
+  .section-index { display: inline-block; color: #b8acbb; font-size: 16px; letter-spacing: 1px; }
   .about h2 { margin: 24px 0 0; color: #ff70c4; font: 400 clamp(22px, 2.2vw, 32px)/1.6 'Press Start', monospace; letter-spacing: -.6px; }
   .about-copy { align-self: center; }
   .about-copy p { margin: 0 0 20px; color: #e1d8e4; font-size: clamp(25px, 2.1vw, 32px); line-height: 1.24; }
@@ -201,11 +245,9 @@
   footer { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; min-height: 155px; padding: 32px clamp(28px, 8vw, 160px); color: #b8acbb; font-size: 15px; letter-spacing: 1px; }
   footer > span { font: 400 10px 'Press Start', monospace; padding-bottom: 5px; }
   .footer-slash { margin-left: 6px; color: var(--pink); }
-  .banana-lift { position: relative; display: flex; align-items: center; gap: 23px; padding: 13px 0; color: #ffe65a; }
-  .banana-lift img { width: 92px; height: 126px; object-fit: cover; image-rendering: pixelated; position: absolute; right: 100%; bottom: -2px; margin-right: 15px; transform-origin: bottom center; transition: transform 200ms steps(4); }
-  .banana-lift:hover img, .banana-lift:focus-visible img { transform: translateY(-12px) rotate(-10deg); }
-  .banana-lift:hover { color: #ff70c4; }
-  .banana-lift > span > span { margin-left: 7px; font-size: 23px; }
+  .surface-link { padding: 13px 0; color: #ffe65a; }
+  .surface-link:hover { color: #ff70c4; }
+  .surface-link > span > span { margin-left: 7px; font-size: 23px; }
 
   @keyframes title-glitch {
     0%, 90%, 94%, 97%, 100% { opacity: 0; }
@@ -214,9 +256,22 @@
     95% { opacity: .8; clip-path: inset(38% 0 42%); transform: translate(3px, 1px); }
     96% { opacity: .8; clip-path: inset(76% 0 8%); transform: translate(-3px, -1px); }
   }
+  @keyframes title-tear {
+    0%, 83%, 87%, 100% { opacity: 0; transform: none; }
+    84% { opacity: .8; clip-path: inset(28% 0 57%); transform: translateX(-7px) skewX(-4deg); }
+    85% { opacity: .8; clip-path: inset(52% 0 29%); transform: translateX(5px) skewX(3deg); }
+    86% { opacity: .6; clip-path: inset(8% 0 82%); transform: translateX(-3px); }
+  }
+  @keyframes tail-flick { to { transform: scaleX(.55); } }
+  @keyframes fin-flick { to { transform: scaleY(.7); } }
   @keyframes drift { 0% { transform: translate(-10px, 2px) rotate(-4deg); } 50% { transform: translate(12px, 21px) rotate(3deg); } 100% { transform: translate(-8px, 44px) rotate(-2deg); } }
-  @keyframes swim { 0% { transform: translate(-35px, 2px); } 50% { transform: translate(10px, -9px); } 100% { transform: translate(55px, 5px); } }
-  @keyframes bubble-up { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: .7; } 80% { opacity: .5; } 100% { opacity: 0; transform: translate(15px, -170px); } }
+  @keyframes bubble-up {
+    0% { opacity: 0; transform: translate(0, 0); }
+    2% { opacity: .8; }
+    16% { opacity: .7; transform: translate(-10px, -65px); }
+    32% { opacity: 0; transform: translate(5px, -140px); }
+    33%, 100% { opacity: 0; transform: translate(5px, -140px); }
+  }
 
   @media (max-width: 1000px) {
     nav { gap: 22px; }
@@ -244,6 +299,7 @@
     h1 { font-size: 19vw; line-height: 1.15; filter: drop-shadow(2px 3px 0 #642342); }
     .ocean-stage { grid-template-columns: 1fr; min-height: 0; }
     .ocean { min-height: clamp(350px, 92vw, 520px); }
+    .ocean::after { position: absolute; z-index: 3; inset-inline: 0; bottom: -1px; height: 28px; content: ''; background: #ff65ba; clip-path: var(--pixel-wave); pointer-events: none; }
     .cat-drift { width: clamp(105px, 29vw, 160px); left: 49%; top: 17%; }
     .intro-note { padding: 34px 26px 36px; min-height: 300px; }
     .intro-note h2 { max-width: 350px; font-size: 20px; margin-bottom: 18px; }
@@ -264,9 +320,8 @@
     .development-note { margin-top: 23px; font-size: 18px; }
     footer { padding: 32px 24px; min-height: 170px; font-size: 12px; letter-spacing: .3px; }
     footer > span { font-size: 8px; }
-    .banana-lift { max-width: 145px; line-height: 1.1; padding-left: 45px; }
-    .banana-lift img { right: calc(100% - 45px); margin-right: 9px; width: 72px; height: 104px; }
-    .banana-lift > span > span { margin-left: 0; font-size: 20px; }
+    .surface-link { max-width: 145px; line-height: 1.1; }
+    .surface-link > span > span { margin-left: 0; font-size: 20px; }
   }
   @media (max-width: 360px) {
     .wordmark { display: none; }
@@ -280,9 +335,8 @@
   }
   @media (prefers-reduced-motion: reduce) {
     :global(html) { scroll-behavior: auto; }
-    .glitch-copy, .cat-drift, .fish-path, .bubble { animation: none; }
-    .bubble { opacity: .5; }
-    .ocean:hover .fish-path svg { transform: scaleX(var(--flip)); }
-    .fish-path svg, .mascot img, .cat-speech, .friend-speech, .friend img, .pop-pixels, .wordmark img, .icon-link, .pixel-arrow, .banana-lift img { transition: none; }
+    .glitch-copy, .cat-drift, .bubble, .fish-tail, .fish-fin { animation: none; }
+    .bubble { display: none; }
+    .cat-body, .cat-speech, .friend-speech, .friend img, .pop-pixels, .wordmark img, .icon-link, .pixel-arrow { transition: none; }
   }
 </style>

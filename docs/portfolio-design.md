@@ -4,7 +4,7 @@ Scope: only the introduction/portfolio. The other app screens are not implemente
 
 ## Current direction
 
-The revised portfolio fills the viewport without an outer frame. SONAR is centered with a brief, occasional pixel glitch; hot pink is the primary color, with cyan, yellow, red and violet accents drawn from the mascot. The brighter reef is on the left, and the solid pink introduction is on the right. Ten small fish swim at different speeds and scatter on reef hover; a stepped pixel wave joins the hero to the project description. The ocean cat, Pop Cat and the green cat react only while hovered. Banana Cat is smaller and links back to the top. The pause button was removed at the user's request; reduced-motion support remains.
+The portfolio fills the viewport without an outer frame. SONAR wraps gently around a cylindrical perspective: the center is prominent and the outer letters recede and fade. Three short glitch layers run at staggered intervals. Hot pink is the primary color, with cyan, yellow, red and violet accents drawn from the mascot. The bright reef is on the left, and the solid pink introduction is on the right. Fourteen larger fish have tail/fin cycles, independent wandering paths and local pointer avoidance. The simulation updates at most 30 times per second and stops offscreen, in hidden tabs, or with reduced motion. Stepped waves frame both hero edges. The description fades and rises into view once on scroll, with the reveal animation skipped for reduced motion. Small bursts of bubbles rise from the drifting cat's face. Cats react only on hover; Banana Cat has been removed.
 
 ## Artwork prompts
 
@@ -29,12 +29,6 @@ Transparent pixel-art sprite asset. Reproduce the supplied green alien cat faith
 Reference: supplied pop cat. Transparent background requested.
 
 Transparent pixel-art sprite asset. Reproduce the supplied pop cat faithfully as one isolated character: white cat body, orange/brown patches, pink ear interiors, huge open black-outlined mouth with red interior. Keep the original deliberate large pixel clusters, iconic silhouette and happy open mouth. Remove white background but preserve white fur inside the black character outline. Genuine transparent alpha, no white rectangle. Clean crisp hard pixel edges. No new accessories, shadows, text or objects. Center entire character with tight but complete transparent padding.
-
-### web/public/images/banana-cat.png
-
-Reference: supplied banana cat. Transparent background requested.
-
-Transparent pixel-art sprite asset. Faithfully reproduce ONLY the banana-costumed cat from the reference. Preserve the tall curved bright yellow banana suit with brown stem, gray/brown cat face peeking out, little paws and feet, original blocky pixel clusters and funny expression. Remove the white background, the gray ground shadow, and the separate palette strip at the far right. Entire banana cat fully visible on genuine transparent alpha with clean crisp pixel edges and comfortable minimal padding. No floor, no added accessories, no lettering, no extra cats. Keep the yellow banana, don't recolor it pink.
 
 ## Fonts
 

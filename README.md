@@ -4,7 +4,7 @@ Sonar has a FastAPI service, a Svelte/TypeScript portfolio page, and local SQLit
 
 ## Interface structure
 
-`web/src/App.svelte` opens `web/src/screens/Portfolio.svelte`, the only implemented screen. Manual, Automatic, and Settings remain empty components pending their interface briefs. The portfolio fills the page with a centered pink CRT title, a bright pixel reef on the left, and the intro on the right. Local cat sprites react on hover; the fish swim and scatter on ocean hover. Motion respects reduced-motion preferences. GitHub links to the supplied profile; Discord and “Let’s start” are disabled until destinations are supplied. Artwork prompts are recorded in [portfolio design notes](docs/portfolio-design.md).
+`web/src/App.svelte` opens `web/src/screens/Portfolio.svelte`, the only implemented screen. Manual, Automatic, and Settings remain empty components pending their interface briefs. The portfolio fills the page with a centered pink CRT title, a bright pixel reef on the left, and the intro on the right. Local cat sprites react on hover; fourteen fish wander independently and swim away from a nearby pointer. The title has a cylindrical perspective, and the description reveals on scroll. Motion respects reduced-motion preferences. GitHub links to the supplied profile; Discord and “Let’s start” are disabled until destinations are supplied. Artwork prompts are recorded in [portfolio design notes](docs/portfolio-design.md).
 
 For local interface work, run `npm run dev` from `web/` and open the printed local URL. `npm run build` checks Svelte/TypeScript and produces the static app served by FastAPI.
 
@@ -31,6 +31,13 @@ Open `http://127.0.0.1:8000/` for the portfolio and `http://127.0.0.1:8000/healt
 
 ## Check
 
+For the portfolio, run these from `web/` (the steering tests use Node 22.6 or newer):
+
+```sh
+npm run build
+node --experimental-strip-types --test tests/fish.test.mjs
+```
+
 After building the web app, run:
 
 ```sh
@@ -38,7 +45,7 @@ cd service
 ../.venv/bin/python -m unittest discover -s tests -v
 ```
 
-The smoke test starts the service twice and checks `/health`, the placeholder page, SQLite WAL mode and persistence, and that a test secret is absent from responses and logs.
+The smoke test starts the service twice and checks `/health`, the portfolio page, SQLite WAL mode and persistence, and that a test secret is absent from responses and logs.
 
 ## Step 2 feed probe
 
