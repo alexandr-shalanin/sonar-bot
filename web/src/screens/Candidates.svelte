@@ -61,9 +61,10 @@
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
     const pointer = matchMedia('(hover: hover) and (pointer: fine)');
     let frame = 0;
+    let bounds: DOMRect | null = null;
     function move(event: PointerEvent) {
       if (motion.matches || !pointer.matches || event.pointerType !== 'mouse') return;
-      const bounds = node.getBoundingClientRect();
+      bounds ??= node.getBoundingClientRect();
       const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
       const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
       cancelAnimationFrame(frame);
@@ -72,22 +73,35 @@
         node.style.setProperty('--ry', ((x - .5) * 12) + 'deg');
         node.style.setProperty('--mx', (x * 100) + '%');
         node.style.setProperty('--my', (y * 100) + '%');
+        node.style.setProperty('--lx', ((x - .5) * 14) + 'px');
+        node.style.setProperty('--ly', ((y - .5) * 14) + 'px');
         node.classList.add('tilting');
       });
     }
     function reset() {
       cancelAnimationFrame(frame);
+      bounds = null;
       node.classList.remove('tilting');
       node.style.setProperty('--rx', '0deg');
       node.style.setProperty('--ry', '0deg');
+      node.style.setProperty('--lx', '0px');
+      node.style.setProperty('--ly', '0px');
     }
     node.addEventListener('pointermove', move);
     node.addEventListener('pointerleave', reset);
+    node.addEventListener('pointercancel', reset);
+    window.addEventListener('scroll', reset, { passive: true, capture: true });
+    window.addEventListener('resize', reset);
+    pointer.addEventListener('change', reset);
     motion.addEventListener('change', reset);
     return { destroy() {
       reset();
       node.removeEventListener('pointermove', move);
       node.removeEventListener('pointerleave', reset);
+      node.removeEventListener('pointercancel', reset);
+      window.removeEventListener('scroll', reset, true);
+      window.removeEventListener('resize', reset);
+      pointer.removeEventListener('change', reset);
       motion.removeEventListener('change', reset);
     } };
   }
@@ -113,6 +127,8 @@
     {#each candidates as token (token.mint)}
       <article class="token-card {rarity(token.score)}" use:tilt>
         <div class="artwork">
+          <div class="art-surface" aria-hidden="true"></div>
+          <span class="emblem-shadow" aria-hidden="true"></span>
           <div class="edition"><span class="stripes" aria-hidden="true"></span><span>{rarity(token.score)}</span></div>
           <span class="token-age">{age(token.first_seen_ms)}</span>
           <div class="orbit-ring" aria-hidden="true"></div>
@@ -122,6 +138,7 @@
           </svg>
           <span class="art-caption">SONAR COLLECTION / 00{token.emblem + 1}</span>
           <span class="sparkles" aria-hidden="true"></span>
+          <span class="art-glass" aria-hidden="true"></span>
         </div>
         <div class="identity"><span>SOLANA / DEMO</span><span>{fresh(token) ? 'СВЕЖАЯ ЦЕНА' : token.price_usd == null ? 'НЕТ ЦЕНЫ' : 'ЦЕНА УСТАРЕЛА'}</span></div>
         <div class="name-row"><h2>{token.name}</h2><div class="score-badge"><span>SCORE</span><strong>{token.score}<small>/100</small></strong></div></div>
@@ -157,7 +174,7 @@
   .tools button { display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 1px solid #ffffff20; border-radius: 8px; background: #252029; color: #b8acbb; font: 12px system-ui, sans-serif; cursor: not-allowed; }
   .tools svg { width: 18px; height: 18px; }
   .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; align-items: start; }
-  .token-card { --paper: #c0c4cc; --ink: #202733; --art: #929ba9; --accent: #edf0f4; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%; position: relative; isolation: isolate; min-width: 0; padding: 12px 16px 0; border: 1px solid #ffffff60; border-radius: 14px; background: var(--paper); color: var(--ink); box-shadow: 0 10px 0 -5px #09070c, 0 16px 30px #09070c60; font: 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 450ms cubic-bezier(.2,.8,.2,1), box-shadow 350ms; }
+  .token-card { --paper: #c0c4cc; --ink: #202733; --art: #929ba9; --accent: #edf0f4; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%; --lx: 0px; --ly: 0px; position: relative; transform-style: preserve-3d; min-width: 0; padding: 12px 16px 0; border: 1px solid #ffffff60; border-radius: 14px; background: var(--paper); color: var(--ink); box-shadow: 0 10px 0 -5px #09070c, 0 16px 30px #09070c60; font: 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 450ms cubic-bezier(.2,.8,.2,1), box-shadow 350ms; }
   .token-card.tilting { z-index: 2; transition: transform 100ms ease-out, box-shadow 350ms; }
   .legendary { --paper: #efd082; --ink: #382810; --art: #b77b2c; --accent: #fff4c6; background: linear-gradient(125deg, #f2d587 0%, #ffedba 19%, #ddb354 43%, #f9e2a0 70%, #e8c470 100%); border-color: #fff0b6; box-shadow: 0 10px 0 -5px #38260d, 0 12px 40px #dfaa3a25; }
   .epic { --paper: #c5a8f0; --ink: #32204e; --art: #7b4ab0; --accent: #f4e9ff; background: linear-gradient(130deg, #d5bafb, #b89be3 55%, #d4bbf5); border-color: #e3caff; box-shadow: 0 10px 0 -5px #281b3b, 0 12px 30px #a26bde18; }
@@ -167,20 +184,28 @@
   .epic.tilting::after { opacity: .4; }
   .legendary.tilting { box-shadow: 0 18px 35px #08050a90, 0 0 30px #e9c36535; }
   .epic.tilting { box-shadow: 0 18px 35px #08050a90, 0 0 20px #ad78ed20; }
-  .artwork { position: relative; display: grid; place-items: center; height: 238px; overflow: hidden; border-radius: 7px; background: radial-gradient(circle at 50% 45%, #ffffff40, transparent 65%), radial-gradient(var(--ink) .5px, transparent .8px) 0 0 / 4px 4px, var(--art); }
-  .artwork::after { content: ''; position: absolute; inset: 12px; border: 1px solid #ffffff30; border-radius: 50%; pointer-events: none; }
-  .edition { position: absolute; z-index: 2; left: 0; top: 0; display: flex; flex-direction: column; gap: 7px; padding: 0 16px 12px 0; background: var(--paper); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); font-size: 11px; line-height: 1.2; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+  .artwork { position: relative; display: grid; place-items: center; height: 238px; border-radius: 7px; transform-style: preserve-3d; }
+  .art-surface { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; transform: translateZ(2px); background: radial-gradient(circle at 50% 45%, #ffffff40, transparent 65%), radial-gradient(var(--ink) .5px, transparent .8px) 0 0 / 4px 4px, var(--art); }
+  .artwork::after { content: ''; position: absolute; inset: 12px; border: 1px solid #ffffff30; border-radius: 50%; pointer-events: none; transform: translateZ(8px); }
+  .edition { transform: translateZ(58px); position: absolute; z-index: 2; left: 0; top: 0; display: flex; flex-direction: column; gap: 7px; padding: 0 16px 12px 0; background: var(--paper); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); font-size: 11px; line-height: 1.2; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
   .stripes { width: 90px; height: 7px; background: repeating-linear-gradient(115deg, var(--ink) 0 5px, transparent 5px 8px); }
-  .token-age { position: absolute; z-index: 2; right: 10px; top: 10px; color: var(--accent); font-size: 11px; font-weight: 700; }
-  .orbit-ring { position: absolute; width: 146px; height: 146px; border: 1px solid #ffffff35; border-radius: 50%; transform: rotate(-25deg) scaleX(1.35); }
-  .emblem { z-index: 1; width: 132px; height: 132px; overflow: visible; filter: drop-shadow(0 7px 0 #0002) drop-shadow(0 12px 12px #0002); transform: translateZ(0); }
+  .token-age { transform: translateZ(58px); position: absolute; z-index: 2; right: 10px; top: 10px; color: var(--accent); font-size: 11px; font-weight: 700; }
+  .orbit-ring { position: absolute; width: 146px; height: 146px; border: 1px solid #ffffff35; border-radius: 50%; transform: translate3d(calc(var(--lx) * .3), calc(var(--ly) * .3), 14px) rotate(-25deg) scaleX(1.35); }
+  .emblem { z-index: 1; width: 132px; height: 132px; overflow: visible; filter: drop-shadow(calc(0px - var(--lx)) calc(5px - var(--ly)) 1px #0003); transform: translate3d(var(--lx), var(--ly), 36px); }
   .emblem-shape { fill: var(--ink); stroke: var(--accent); stroke-width: 1; paint-order: stroke; }
   .emblem-detail { fill: var(--accent); }
-  .art-caption { position: absolute; z-index: 2; bottom: 14px; color: var(--accent); font: 9px/1.4 ui-monospace, monospace; letter-spacing: 1.8px; }
-  .legendary .artwork::before, .epic .artwork::before { content: ''; position: absolute; inset: -80%; pointer-events: none; }
-  .legendary .artwork::before { background: repeating-conic-gradient(from 20deg at 50% 50%, transparent 0deg 12deg, #fff2 16deg, transparent 24deg 40deg), linear-gradient(120deg, transparent 35%, #fff6 45%, #ffe8a088 49%, transparent 58%); animation: gold-foil 12s ease-in-out infinite alternate; }
-  .epic .artwork::before { opacity: .45; background: repeating-linear-gradient(125deg, transparent 0 45px, #eab9ff66 46px 47px, transparent 48px 65px), linear-gradient(125deg, transparent 35%, #86dcff55 43%, #f5d0ff66 49%, transparent 58%); animation: epic-foil 15s ease-in-out infinite alternate; }
-  .sparkles { display: none; pointer-events: none; }
+  .art-caption { transform: translateZ(58px); position: absolute; z-index: 2; bottom: 14px; color: var(--accent); font: 9px/1.4 ui-monospace, monospace; letter-spacing: 1.8px; }
+  .legendary .art-surface::before, .epic .art-surface::before { content: ''; position: absolute; inset: -80%; pointer-events: none; }
+  .legendary .art-surface::before { background: repeating-conic-gradient(from 20deg at 50% 50%, transparent 0deg 12deg, #fff2 16deg, transparent 24deg 40deg), linear-gradient(120deg, transparent 35%, #fff6 45%, #ffe8a088 49%, transparent 58%); animation: gold-foil 12s ease-in-out infinite alternate; }
+  .epic .art-surface::before { opacity: .45; background: repeating-linear-gradient(125deg, transparent 0 45px, #eab9ff66 46px 47px, transparent 48px 65px), linear-gradient(125deg, transparent 35%, #86dcff55 43%, #f5d0ff66 49%, transparent 58%); animation: epic-foil 15s ease-in-out infinite alternate; }
+  .emblem-shadow { position: absolute; width: 124px; height: 40px; top: calc(50% + 43px); border-radius: 50%; background: radial-gradient(ellipse, #0005, transparent 68%); transform: translate3d(calc(0px - var(--lx)), calc(0px - var(--ly)), 4px); pointer-events: none; }
+  .art-glass { position: absolute; inset: 0; border: 1px solid #ffffff35; border-radius: inherit; box-shadow: inset 0 1px 0 #ffffff35, inset 0 -1px 0 #0002; transform: translateZ(52px); pointer-events: none; }
+  .legendary .art-glass, .epic .art-glass { background: linear-gradient(135deg, #ffffff0a, transparent 40%, #ffffff08); }
+  .legendary.tilting .art-glass { background: radial-gradient(ellipse at var(--mx) var(--my), #fff5, transparent 62%), linear-gradient(125deg, transparent 40%, #fff2 49%, transparent 56%); }
+  .epic.tilting .art-glass { background: radial-gradient(ellipse at var(--mx) var(--my), #f4dfff26, transparent 62%); }
+  .orbit-ring, .emblem, .emblem-shadow { transition: transform 450ms cubic-bezier(.2,.8,.2,1), filter 450ms; }
+  .tilting .orbit-ring, .tilting .emblem, .tilting .emblem-shadow { transition-duration: 100ms; }
+  .sparkles { display: none; pointer-events: none; transform: translate3d(calc(var(--lx) * -.25), calc(var(--ly) * -.25), 22px); }
   .legendary .sparkles { display: block; position: absolute; z-index: 2; inset: 0; background: radial-gradient(ellipse 1px 8px at 18% 56%, #fff 60%, transparent 100%), radial-gradient(ellipse 8px 1px at 18% 56%, #fff 60%, transparent 100%), radial-gradient(ellipse 1px 6px at 81% 28%, #fff 60%, transparent 100%), radial-gradient(ellipse 6px 1px at 81% 28%, #fff 60%, transparent 100%), radial-gradient(ellipse 1px 5px at 73% 76%, #fff 60%, transparent 100%), radial-gradient(ellipse 5px 1px at 73% 76%, #fff 60%, transparent 100%); animation: twinkle 4s ease-in-out infinite alternate; }
   .epic .sparkles { display: block; position: absolute; z-index: 2; inset: 0; opacity: .5; background: radial-gradient(circle at 18% 70%, #fff 0 1px, transparent 2px), radial-gradient(circle at 80% 30%, #fff 0 1px, transparent 2px), radial-gradient(circle at 78% 78%, #e6d3ff 0 1px, transparent 2px); }
   @keyframes gold-foil { from { transform: translateX(-8%) rotate(-8deg); } to { transform: translateX(8%) rotate(12deg); } }
@@ -214,6 +239,6 @@
   button:focus-visible { outline: 3px solid #251221; outline-offset: 3px; }
   @media (max-width: 1050px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 650px) { .candidates-page { padding: 32px 20px 60px; } .cards { grid-template-columns: minmax(0, 1fr); gap: 24px; } .page-heading { margin-bottom: 26px; } .artwork { height: 230px; } h2 { font-size: 24px; } }
-  @media (hover: none), (pointer: coarse) { .token-card { transform: none; } .legendary .artwork::before, .epic .artwork::before { animation: none; } }
-  @media (prefers-reduced-motion: reduce) { .token-card, .token-card.tilting { transition: none; transform: none; } .legendary .artwork::before, .epic .artwork::before, .legendary .sparkles { animation: none; } .token-card::after { display: none; } .copy.is-copied path { animation: none; } }
+  @media (hover: none), (pointer: coarse) { .token-card { transform: none; transform-style: flat; } .artwork { transform-style: flat; } .emblem { transform: none; } .orbit-ring { transform: rotate(-25deg) scaleX(1.35); } .emblem-shadow { transform: none; } .legendary .art-surface::before, .epic .art-surface::before { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .token-card, .token-card.tilting { transition: none; transform: none; transform-style: flat; } .artwork { transform-style: flat; } .orbit-ring, .emblem, .emblem-shadow { transition: none; } .emblem { transform: none; } .orbit-ring { transform: rotate(-25deg) scaleX(1.35); } .emblem-shadow { transform: none; } .legendary .art-surface::before, .epic .art-surface::before, .legendary .sparkles { animation: none; } .token-card::after { display: none; } .copy.is-copied path { animation: none; } }
 </style>
