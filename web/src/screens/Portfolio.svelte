@@ -52,7 +52,7 @@
         </a>
       </div>
       <a class="text-link" href="#how-to-use">How to use</a>
-      <button class="start-link" type="button" disabled title="The app is in development">Let’s start <span aria-hidden="true">↗</span></button>
+      <a class="start-link" href="#/candidates">Let’s start <span aria-hidden="true">↗</span></a>
     </nav>
   </header>
 
@@ -158,7 +158,7 @@
   .unavailable { color: #b8acbb; cursor: not-allowed; }
   .text-link { padding: 10px 0; white-space: nowrap; }
   .text-link:hover { color: #ff70c4; text-decoration: underline; text-underline-offset: 6px; }
-  .start-link { display: flex; align-items: center; gap: 21px; min-height: 40px; padding: 4px 13px; background: var(--pink); color: #211525; border: 0; box-shadow: 3px 3px #92265f; cursor: not-allowed; white-space: nowrap; }
+  .start-link { display: flex; align-items: center; gap: 21px; min-height: 40px; padding: 4px 13px; background: var(--pink); color: #211525; border: 0; box-shadow: 3px 3px #92265f; white-space: nowrap; }
   .start-link span { font-family: monospace; font-size: 21px; }
 
   .masthead { padding: 23px 24px 28px; text-align: center; }

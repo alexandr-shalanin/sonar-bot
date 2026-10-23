@@ -27,6 +27,9 @@ class ServiceSmokeTest(unittest.TestCase):
                 SONAR_DATA_DIR=str(Path(tmp) / "data"),
                 SONAR_PORT=str(port),
                 SONAR_TEST_SECRET="test-secret-sentinel",
+                SONAR_PUMPPORTAL_ENABLED="0",
+                SONAR_SHRINE_ENABLED="0",
+                SONAR_RISK_ENABLED="0",
             )
             db_path = Path(env["SONAR_DATA_DIR"]) / "sonar.db"
 
@@ -59,12 +62,26 @@ class ServiceSmokeTest(unittest.TestCase):
                     with sqlite3.connect(db_path) as db:
                         self.assertEqual(db.execute("PRAGMA journal_mode").fetchone()[0], "wal")
                         if attempt == 0:
-                            db.execute("CREATE TABLE restart_probe (value TEXT NOT NULL)")
-                            db.execute("INSERT INTO restart_probe VALUES (?)", ("persisted",))
+                            db.execute(
+                                "INSERT INTO candidates (mint, first_seen_ms, last_seen_ms) VALUES (?, ?, ?)",
+                                ("mint-1", 1000, 1000),
+                            )
+                            db.execute(
+                                "INSERT INTO candidate_events (mint, kind, source, received_ms) VALUES (?, ?, ?, ?)",
+                                ("mint-1", "launch", "pumpportal", 1000),
+                            )
                         else:
                             self.assertEqual(
-                                db.execute("SELECT value FROM restart_probe").fetchone()[0],
-                                "persisted",
+                                db.execute(
+                                    "SELECT first_seen_ms FROM candidates WHERE mint = ?", ("mint-1",)
+                                ).fetchone()[0],
+                                1000,
+                            )
+                            self.assertEqual(
+                                db.execute(
+                                    "SELECT kind FROM candidate_events WHERE mint = ?", ("mint-1",)
+                                ).fetchone()[0],
+                                "launch",
                             )
                 finally:
                     process.terminate()
